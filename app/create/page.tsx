@@ -194,19 +194,12 @@ export default function Create() {
         })
       }, 2000)
 
-      // 1. Fetch User Profile for context
+      // 1. Prepare Payload with FormData (for file upload)
       setLoadingStep(0)
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("User not authenticated")
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      // 2. Prepare Payload with FormData (for file upload)
       setLoadingStep(1)
       
       if (!referenceImage) {
@@ -215,17 +208,8 @@ export default function Create() {
 
       const formData = new FormData()
       
-      // Build context-aware user text
-      const contextualPrompt = `
-${description}
-
-Creator Context:
-- Niche: ${profile?.niche || 'General'}
-- Tone: ${(profile?.content_tone || []).join(', ')}
-- Visual Style: ${(profile?.visual_style || []).join(', ')}
-- Format: ${format === 'post' ? 'Square Post (1080x1080)' : format === 'story' ? 'Story (1080x1920)' : 'Reel/TikTok (1080x1920)'}
-- Platforms: ${platforms.join(', ')}
-`.trim()
+      // Simple user text (no profile context)
+      formData.append('user_text', description)
 
       // Always compress to ensure we're under Vercel's limit (1.5MB to be very safe)
       let imageToUpload = referenceImage
@@ -242,9 +226,22 @@ Creator Context:
         }
       }
       
+      // Upload reference image (required)
       formData.append('file', imageToUpload)
+      
+      // Upload product image if provided (optional)
+      if (productImage) {
+        let productToUpload = productImage
+        if (productImage.size > maxUploadSize) {
+          try {
+            productToUpload = await compressImage(productImage, 1.5)
+          } catch (error) {
+            console.warn('Failed to compress product image, skipping it')
+          }
+        }
+        formData.append('product_file', productToUpload)
+      }
 
-      formData.append('user_text', contextualPrompt)
       formData.append('format', format)
       formData.append('platforms', platforms.join(','))
 

@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const userText = formData.get('user_text') as string;
     const file = formData.get('file') as File;
+    const productFile = formData.get('product_file') as File | null;
     const format = (formData.get('format') as string) || 'post';
     const platforms = (formData.get('platforms') as string)?.split(',') || ['instagram'];
 
@@ -57,30 +58,35 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Generate simple prompt from user text (simple transformation, no complex optimization)
+    // 3. Generate simple prompt from user text (taking into account uploaded images)
+    const imageContext = productFile 
+      ? "L'utilisateur a fourni deux images : une image de référence (créateur) et une image produit."
+      : "L'utilisateur a fourni une image de référence (créateur).";
+
     const simplePromptSystem = 
-      "Transforme le texte de l'utilisateur en un prompt simple et clair pour génération d'image. " +
-      "Garde le sens original, traduis en anglais si nécessaire, et rends-le concis. " +
+      "Transforme le texte de l'utilisateur en un prompt simple pour génération d'image. " +
+      `${imageContext} ` +
+      "Garde le sens original, traduis en anglais si nécessaire, rends-le concis. " +
       "Retourne UNIQUEMENT le prompt, sans guillemets, sans commentaires.";
 
     const captionSystem = 
-      "Tu es un expert en création de contenu pour réseaux sociaux (Instagram, TikTok, Facebook). " +
-      "Tu génères des captions engageantes, authentiques et adaptées au format et à la plateforme. " +
-      "Utilise des emojis pertinents, un ton naturel et des hooks accrocheurs. " +
-      "Retourne UNIQUEMENT la caption, sans guillemets, sans introduction.";
+      "Tu es un expert en création de contenu pour réseaux sociaux. " +
+      "Génère une caption engageante et authentique. " +
+      "Utilise des emojis pertinents. " +
+      "Retourne UNIQUEMENT la caption, sans guillemets.";
 
-    const formatDescription = format === 'post' ? 'Post Instagram carré' : format === 'story' ? 'Story Instagram' : 'Reel/TikTok';
-    const captionMessage = `User request: ${userText}\nFormat: ${formatDescription}\nPlatforms: ${platforms.join(', ')}\n\nGénère une caption parfaite pour ce contenu.`;
+    const formatDescription = format === 'post' ? 'Post Instagram' : format === 'story' ? 'Story Instagram' : 'Reel/TikTok';
+    const captionMessage = `Texte: ${userText}\nFormat: ${formatDescription}\nPlateformes: ${platforms.join(', ')}\n\nGénère une caption.`;
 
     // Generate simple prompt and caption sequentially
     const simplePromptCompletion = await featherless.chat.completions.create({
       model: FEATHERLESS_MODEL,
       messages: [
         { role: "system", content: simplePromptSystem },
-        { role: "user", content: `User text: ${userText}\nTransforme ce texte en un prompt simple pour génération d'image.` },
+        { role: "user", content: `Texte utilisateur: ${userText}\nTransforme en prompt simple pour image.` },
       ],
       temperature: 0.5,
-      max_tokens: 200,
+      max_tokens: 150,
     });
 
     const captionCompletion = await featherless.chat.completions.create({
@@ -90,7 +96,7 @@ export async function POST(req: NextRequest) {
         { role: "user", content: captionMessage },
       ],
       temperature: 0.8,
-      max_tokens: 500,
+      max_tokens: 400,
     });
 
     const masterPrompt = simplePromptCompletion.choices[0].message.content?.trim();

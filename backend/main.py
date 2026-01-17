@@ -73,17 +73,19 @@ class GenerationResponse(BaseModel):
 
 
 # ====== HELPER FUNCTIONS ======
-def build_master_prompt(user_text: str) -> str:
+def build_master_prompt(user_text: str, image_context: str = "") -> str:
     """
     Simple transformation of user text into image prompt (no complex optimization).
+    Takes into account uploaded images.
     """
     system_message = (
-        "Transforme le texte de l'utilisateur en un prompt simple et clair pour génération d'image. "
-        "Garde le sens original, traduis en anglais si nécessaire, et rends-le concis. "
+        "Transforme le texte de l'utilisateur en un prompt simple pour génération d'image. "
+        f"{image_context} " +
+        "Garde le sens original, traduis en anglais si nécessaire, rends-le concis. "
         "Retourne UNIQUEMENT le prompt, sans guillemets, sans commentaires."
     )
 
-    user_message = f"User text: {user_text}\nTransforme ce texte en un prompt simple pour génération d'image."
+    user_message = f"Texte utilisateur: {user_text}\nTransforme en prompt simple pour image."
 
     completion = featherless_client.chat.completions.create(
         model=FEATHERLESS_MODEL,
@@ -92,7 +94,7 @@ def build_master_prompt(user_text: str) -> str:
             {"role": "user", "content": user_message},
         ],
         temperature=0.5,
-        max_tokens=200,
+        max_tokens=150,
     )
 
     master_prompt = completion.choices[0].message.content.strip()
@@ -201,24 +203,29 @@ def health_check():
 async def generate_endpoint(
     user_text: str = Form(...),
     file: UploadFile = File(...),
+    product_file: UploadFile = File(None),
     format: str = Form("post"),
     platforms: str = Form("instagram")
 ):
     """
-    Generate edited image and caption from user text + uploaded image.
+    Generate edited image and caption from user text + uploaded images.
     
     Usage:
     - user_text: "Ajoute moi une casquette gucci"
-    - file: image.jpg (upload from frontend)
+    - file: image.jpg (reference image - required)
+    - product_file: product.jpg (product image - optional)
     - format: "post", "story", or "reel" (optional, default: "post")
     - platforms: comma-separated list like "instagram,tiktok" (optional, default: "instagram")
     """
     # Parse platforms
     platforms_list = [p.strip() for p in platforms.split(",")]
     
-    # 1) Generate simple prompt and caption sequentially to avoid rate limit
-    # (Featherless has concurrency limits, so we do them one at a time)
-    master_prompt = build_master_prompt(user_text=user_text)
+    # Check if product image was provided
+    has_product_image = product_file is not None
+    
+    # 1) Generate simple prompt (taking into account uploaded images)
+    image_context = "L'utilisateur a fourni deux images : référence (créateur) et produit." if has_product_image else "L'utilisateur a fourni une image de référence (créateur)."
+    master_prompt = build_master_prompt(user_text=user_text, image_context=image_context)
     caption = generate_caption(user_text=user_text, format=format, platforms=platforms_list)
 
     # 2) Read uploaded image

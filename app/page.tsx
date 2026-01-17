@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/Header"
-import { Sparkles, Play, Zap, Star, ArrowRight, ChevronRight, Instagram, Type, Image as ImageIcon } from "lucide-react"
+import { Sparkles, Zap, Star, ArrowRight, ChevronRight, Instagram, Type, Image as ImageIcon } from "lucide-react"
 import Image from "next/image"
 
 // Demo assets
@@ -68,10 +68,6 @@ export default function LandingPage() {
                   Créer mon premier contenu
                   <ArrowRight className="h-5 w-5 ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
-              </Button>
-              <Button variant="outline" size="lg" className="h-12 px-8 text-lg rounded-full border-gray-200 text-gray-700 hover:bg-gray-50 gap-2">
-                <Play className="h-4 w-4 fill-current" />
-                Voir la démo
               </Button>
             </div>
 
