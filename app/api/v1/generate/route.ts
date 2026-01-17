@@ -65,27 +65,27 @@ export async function POST(req: NextRequest) {
     const formatDescription = format === 'post' ? 'Post Instagram carré' : format === 'story' ? 'Story Instagram' : 'Reel/TikTok';
     const captionMessage = `User request: ${userText}\nFormat: ${formatDescription}\nPlatforms: ${platforms.join(', ')}\n\nGénère une caption parfaite pour ce contenu.`;
 
-    // Generate both prompts in parallel
-    const [imagePromptCompletion, captionCompletion] = await Promise.all([
-      featherless.chat.completions.create({
-        model: FEATHERLESS_MODEL,
-        messages: [
-          { role: "system", content: imagePromptSystem },
-          { role: "user", content: imagePromptMessage },
-        ],
-        temperature: 0.7,
-        max_tokens: 300,
-      }),
-      featherless.chat.completions.create({
-        model: FEATHERLESS_MODEL,
-        messages: [
-          { role: "system", content: captionSystem },
-          { role: "user", content: captionMessage },
-        ],
-        temperature: 0.8,
-        max_tokens: 500,
-      })
-    ]);
+    // Generate prompts sequentially to avoid Featherless concurrency limit
+    // (Each 70B request needs 4 units, plan limit is 4, so we can't do parallel)
+    const imagePromptCompletion = await featherless.chat.completions.create({
+      model: FEATHERLESS_MODEL,
+      messages: [
+        { role: "system", content: imagePromptSystem },
+        { role: "user", content: imagePromptMessage },
+      ],
+      temperature: 0.7,
+      max_tokens: 300,
+    });
+
+    const captionCompletion = await featherless.chat.completions.create({
+      model: FEATHERLESS_MODEL,
+      messages: [
+        { role: "system", content: captionSystem },
+        { role: "user", content: captionMessage },
+      ],
+      temperature: 0.8,
+      max_tokens: 500,
+    });
 
     const masterPrompt = imagePromptCompletion.choices[0].message.content?.trim();
     const caption = captionCompletion.choices[0].message.content?.trim();
