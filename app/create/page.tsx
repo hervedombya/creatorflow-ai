@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Header } from "@/components/Header"
 import { InstagramIcon, TikTokIcon, SnapchatIcon, FacebookIcon } from "@/components/icons/SocialIcons"
-import { ArrowLeft, Sparkles, Upload, Square, Smartphone, Video, X, Loader2, Image as ImageIcon } from "lucide-react"
+import { ArrowLeft, Sparkles, Upload, Square, Smartphone, Video, X, Loader2, Image as ImageIcon, Type } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { toast } from "sonner"
@@ -40,6 +40,7 @@ export default function Create() {
   const [error, setError] = useState<string | null>(null)
   const [resultImage, setResultImage] = useState<string | null>(null)
   const [masterPrompt, setMasterPrompt] = useState<string | null>(null)
+  const [caption, setCaption] = useState<string | null>(null)
   const [showResults, setShowResults] = useState(false)
   
   const loadingSteps = [
@@ -139,10 +140,17 @@ Creator Context:
 
       formData.append('user_text', contextualPrompt)
       formData.append('file', referenceImage)
+      formData.append('format', format)
+      formData.append('platforms', platforms.join(','))
 
-      // 3. Call Backend (Python FastAPI)
+      // 3. Call Backend (Python FastAPI or Next.js API route)
       setLoadingStep(2)
-      const response = await fetch(`${BACKEND_URL}/api/v1/generate`, {
+      // If BACKEND_URL is relative (starts with /), use it directly, otherwise append /api/v1/generate
+      const apiUrl = BACKEND_URL.startsWith('/') 
+        ? `${BACKEND_URL}/generate` 
+        : `${BACKEND_URL}/api/v1/generate`
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: formData,
       })
@@ -168,6 +176,7 @@ Creator Context:
             user_id: user.id,
             image_url: data.image_url,
             master_prompt: data.master_prompt,
+            caption: data.caption || null,
             user_text: description,
             format: format,
             platforms: platforms,
@@ -187,6 +196,7 @@ Creator Context:
       
       setResultImage(data.image_url)
       setMasterPrompt(data.master_prompt)
+      setCaption(data.caption || null)
       setShowResults(true)
 
     } catch (err: any) {
@@ -205,6 +215,7 @@ Creator Context:
     setShowResults(false)
     setResultImage(null)
     setMasterPrompt(null)
+    setCaption(null)
     setDescription('')
     setReferenceImage(null)
     setReferencePreview(null)
@@ -357,38 +368,45 @@ Creator Context:
                 </div>
               )}
 
-              {/* Platform-Specific Captions */}
-              <div className="mb-8">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">Légendes suggérées</h3>
-                <div className="space-y-4">
-                  {platforms.map((platform) => (
-                    <div key={platform} className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        {platform === 'instagram' && <InstagramIcon className="w-5 h-5 text-pink-600" />}
-                        {platform === 'tiktok' && <TikTokIcon className="w-5 h-5 text-gray-900" />}
-                        {platform === 'snapchat' && <SnapchatIcon className="w-5 h-5 text-yellow-400" />}
-                        {platform === 'facebook' && <FacebookIcon className="w-5 h-5 text-blue-600" />}
-                        <span className="font-medium text-gray-900 capitalize">{platform}</span>
+              {/* Generated Caption */}
+              {caption && (
+                <div className="mb-8">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+                    <Type className="w-4 h-4 mr-2 text-purple-600" />
+                    Caption générée par l'IA
+                  </h3>
+                  <div className="space-y-4">
+                    {platforms.map((platform) => (
+                      <div key={platform} className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            {platform === 'instagram' && <InstagramIcon className="w-5 h-5 text-pink-600" />}
+                            {platform === 'tiktok' && <TikTokIcon className="w-5 h-5 text-gray-900" />}
+                            {platform === 'snapchat' && <SnapchatIcon className="w-5 h-5 text-yellow-400" />}
+                            {platform === 'facebook' && <FacebookIcon className="w-5 h-5 text-blue-600" />}
+                            <span className="font-medium text-gray-900 capitalize">{platform}</span>
+                            <span className="text-xs text-gray-500">• {format === 'post' ? 'Post' : format === 'story' ? 'Story' : 'Reel'}</span>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-xs h-7"
+                            onClick={() => {
+                              navigator.clipboard.writeText(caption)
+                              toast.success('Caption copiée !')
+                            }}
+                          >
+                            Copier
+                          </Button>
+                        </div>
+                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                          {caption}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-600">
-                        {description.slice(0, 100)}...
-                        <span className="block mt-2 text-purple-600">#CreatorFlow #{platform} #ContentCreation</span>
-                      </p>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="mt-2 text-xs h-7"
-                        onClick={() => {
-                          navigator.clipboard.writeText(description)
-                          toast.success('Copié !')
-                        }}
-                      >
-                        Copier
-                      </Button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Info Box */}
               <div className="mb-8 p-4 bg-blue-50 rounded-xl border border-blue-100">

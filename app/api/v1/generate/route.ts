@@ -31,6 +31,8 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const userText = formData.get('user_text') as string;
     const file = formData.get('file') as File;
+    const format = (formData.get('format') as string) || 'post';
+    const platforms = (formData.get('platforms') as string)?.split(',') || ['instagram'];
 
     if (!userText) {
       return NextResponse.json(
@@ -46,28 +48,58 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Build master prompt with Featherless
-    const systemMessage = 
+    // 3. Generate both image prompt AND caption in parallel for speed
+    const imagePromptSystem = 
       "Tu es un expert en prompt engineering pour modèles d'images " +
       "(Flux, SDXL, DALL-E, Gemini). Tu génères UN SEUL prompt ultra clair, en anglais, " +
       "optimisé pour le text-to-image. Tu ne rajoutes aucun commentaire autour.";
 
-    const userMessage = `User text: ${userText}\nReturn a single, clean text-to-image prompt in English. No quotes, no extra text.`;
+    const captionSystem = 
+      "Tu es un expert en création de contenu pour réseaux sociaux (Instagram, TikTok, Facebook). " +
+      "Tu génères des captions engageantes, authentiques et adaptées au format et à la plateforme. " +
+      "Utilise des emojis pertinents, un ton naturel et des hooks accrocheurs. " +
+      "Retourne UNIQUEMENT la caption, sans guillemets, sans introduction.";
 
-    const completion = await featherless.chat.completions.create({
-      model: FEATHERLESS_MODEL,
-      messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: userMessage },
-      ],
-      temperature: 0.7,
-      max_tokens: 300,
-    });
+    const imagePromptMessage = `User text: ${userText}\nReturn a single, clean text-to-image prompt in English. No quotes, no extra text.`;
+    
+    const formatDescription = format === 'post' ? 'Post Instagram carré' : format === 'story' ? 'Story Instagram' : 'Reel/TikTok';
+    const captionMessage = `User request: ${userText}\nFormat: ${formatDescription}\nPlatforms: ${platforms.join(', ')}\n\nGénère une caption parfaite pour ce contenu.`;
 
-    const masterPrompt = completion.choices[0].message.content?.trim();
+    // Generate both prompts in parallel
+    const [imagePromptCompletion, captionCompletion] = await Promise.all([
+      featherless.chat.completions.create({
+        model: FEATHERLESS_MODEL,
+        messages: [
+          { role: "system", content: imagePromptSystem },
+          { role: "user", content: imagePromptMessage },
+        ],
+        temperature: 0.7,
+        max_tokens: 300,
+      }),
+      featherless.chat.completions.create({
+        model: FEATHERLESS_MODEL,
+        messages: [
+          { role: "system", content: captionSystem },
+          { role: "user", content: captionMessage },
+        ],
+        temperature: 0.8,
+        max_tokens: 500,
+      })
+    ]);
+
+    const masterPrompt = imagePromptCompletion.choices[0].message.content?.trim();
+    const caption = captionCompletion.choices[0].message.content?.trim();
+
     if (!masterPrompt) {
       return NextResponse.json(
         { detail: "Failed to generate master prompt" },
+        { status: 500 }
+      );
+    }
+
+    if (!caption) {
+      return NextResponse.json(
+        { detail: "Failed to generate caption" },
         { status: 500 }
       );
     }
@@ -114,6 +146,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         master_prompt: masterPrompt,
         image_url: `data:${mimeType};base64,${base64Image}`,
+        caption: caption || "Caption generation failed",
         warning: "Gemini image generation failed, returning original image"
       });
     }
@@ -141,6 +174,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       master_prompt: masterPrompt,
       image_url: imageDataUrl,
+      caption: caption,
     });
 
   } catch (error: any) {
