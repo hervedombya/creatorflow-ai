@@ -157,7 +157,27 @@ Creator Context:
       // Small delay to show final step
       await new Promise(resolve => setTimeout(resolve, 500))
       
-      // 4. Success
+      // 4. Save to database
+      try {
+        const { error: dbError } = await supabase
+          .from('generated_content')
+          .insert({
+            user_id: user.id,
+            image_url: data.image_url,
+            master_prompt: data.master_prompt,
+            user_text: description,
+            format: format,
+            platforms: platforms,
+          })
+
+        if (dbError) {
+          console.error('Error saving to database:', dbError)
+        }
+      } catch (dbErr) {
+        console.error('Database save error:', dbErr)
+      }
+      
+      // 5. Success
       toast.success('Contenu généré avec succès !', {
         description: 'Votre image a été créée.'
       })

@@ -54,6 +54,7 @@ export function Header() {
         {user && (
           <>
             <Link href="/create" className="text-purple-600 hover:text-purple-700">Créer</Link>
+            <Link href="/library" className="hover:text-purple-600 transition-colors">Bibliothèque</Link>
             <div className="w-px h-4 bg-gray-200" />
           </>
         )}
