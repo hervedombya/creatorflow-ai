@@ -3,6 +3,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Header } from "@/components/Header"
+import { InstagramIcon, TikTokIcon, SnapchatIcon, FacebookIcon } from "@/components/icons/SocialIcons"
 import { ArrowLeft, Sparkles, Upload, Square, Smartphone, Video } from "lucide-react"
 import Link from "next/link"
 
@@ -102,21 +103,25 @@ export default function Create() {
           <div className="flex flex-wrap gap-4">
              <div className="flex items-center space-x-2 border border-purple-200 bg-purple-50 rounded-lg px-4 py-3 cursor-pointer">
                 <Checkbox id="instagram" defaultChecked className="border-purple-400 data-[state=checked]:bg-purple-600" />
+                <InstagramIcon className="w-5 h-5 text-pink-600" />
                 <Label htmlFor="instagram" className="text-sm font-medium text-purple-900 cursor-pointer">Instagram</Label>
              </div>
              
              <div className="flex items-center space-x-2 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-50 cursor-pointer">
                 <Checkbox id="tiktok" />
+                <TikTokIcon className="w-5 h-5 text-gray-900" />
                 <Label htmlFor="tiktok" className="text-sm font-medium text-gray-700 cursor-pointer">TikTok</Label>
              </div>
 
              <div className="flex items-center space-x-2 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-50 cursor-pointer">
                 <Checkbox id="snapchat" />
+                <SnapchatIcon className="w-5 h-5 text-yellow-400" />
                 <Label htmlFor="snapchat" className="text-sm font-medium text-gray-700 cursor-pointer">Snapchat</Label>
              </div>
 
              <div className="flex items-center space-x-2 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-50 cursor-pointer">
                 <Checkbox id="facebook" />
+                <FacebookIcon className="w-5 h-5 text-blue-600" />
                 <Label htmlFor="facebook" className="text-sm font-medium text-gray-700 cursor-pointer">Facebook</Label>
              </div>
           </div>
