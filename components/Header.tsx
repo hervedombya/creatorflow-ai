@@ -36,18 +36,21 @@ export function Header() {
   }
 
   return (
-    <header className="px-6 py-4 flex items-center justify-between bg-white border-b border-gray-100 sticky top-0 z-50">
+    <header className="px-4 md:px-6 py-3 md:py-4 flex items-center justify-between bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="flex items-center gap-2">
         {/* <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
           <Sparkles className="w-5 h-5 fill-current" />
         </div> */}
         <img src="/logo.png" alt="CreatorFlow Logo" className="w-8 h-8 object-contain" />
-        <Link href="/" className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
+        <Link href="/" className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500 hidden sm:block">
           CreatorFlow AI
+        </Link>
+        <Link href="/" className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500 sm:hidden">
+          CreatorFlow
         </Link>
       </div>
 
-      <div className="flex items-center gap-6 text-sm font-medium text-gray-500">
+      <div className="flex items-center gap-3 md:gap-6 text-sm font-medium text-gray-500">
         {user && (
           <>
             <Link href="/create" className="text-purple-600 hover:text-purple-700">Créer</Link>
@@ -58,20 +61,20 @@ export function Header() {
         {loading ? (
           <div className="w-20 h-8 bg-gray-100 rounded-full animate-pulse" />
         ) : user ? (
-          <div className="flex items-center gap-3">
-            <Link href="/profile" className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
+          <div className="flex items-center gap-2 md:gap-3">
+            <Link href="/profile" className="flex items-center gap-2 px-2 py-1 md:px-3 md:py-1.5 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold">
                 {user.email?.charAt(0).toUpperCase()}
               </div>
-              <span className="text-sm text-gray-700 max-w-[120px] truncate">
+              <span className="text-sm text-gray-700 max-w-[100px] truncate hidden md:block">
                 {user.email?.split('@')[0]}
               </span>
             </Link>
             <Button 
               variant="ghost" 
-              size="sm" 
+              size="icon" 
               onClick={handleLogout}
-              className="text-gray-500 hover:text-red-600"
+              className="text-gray-500 hover:text-red-600 w-8 h-8"
             >
               <LogOut className="w-4 h-4" />
             </Button>

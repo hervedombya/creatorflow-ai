@@ -105,15 +105,15 @@ export default function Create() {
     <div className="min-h-screen bg-gray-50/50">
       <Header />
 
-      <main className="max-w-3xl mx-auto px-4 py-12">
+      <main className="max-w-3xl mx-auto px-4 py-6 md:py-12">
         {/* Back Link */}
-        <Link href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 mb-8 transition-colors">
+        <Link href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-900 mb-6 md:mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour
         </Link>
 
-        <div className="space-y-2 mb-10">
-          <h1 className="text-3xl font-bold text-gray-900">Créer votre contenu</h1>
+        <div className="space-y-2 mb-8 md:mb-10">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Créer votre contenu</h1>
           <p className="text-gray-500">Décrivez votre vision, l'IA fait le reste</p>
         </div>
 
@@ -125,7 +125,7 @@ export default function Create() {
         )}
 
         {/* Step 1: Description */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm mb-6">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm mb-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Décrivez votre contenu</h2>
           <Textarea 
             placeholder="Ex: Une photo lifestyle de mon nouveau produit tech, ambiance moderne et minimaliste, couleurs douces..." 
@@ -137,7 +137,7 @@ export default function Create() {
         </div>
 
         {/* Step 2: Reference Image (Required) */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm mb-6">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm mb-6">
           <div className="flex items-center gap-2 mb-4">
              <h2 className="text-sm font-semibold text-gray-900">Image de référence</h2>
              <span className="text-xs text-red-500 font-medium">*obligatoire</span>
@@ -175,7 +175,7 @@ export default function Create() {
         </div>
 
         {/* Step 3: Product Image (Optional) */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm mb-6">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm mb-6">
           <div className="flex items-center gap-2 mb-4">
              <h2 className="text-sm font-semibold text-gray-900">Image du produit</h2>
              <span className="text-sm text-gray-400 font-normal">(optionnel)</span>
@@ -213,7 +213,7 @@ export default function Create() {
         </div>
 
         {/* Step 4: Format */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm mb-6">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm mb-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-6">Format souhaité</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -283,7 +283,7 @@ export default function Create() {
         </div>
 
         {/* Step 5: Platforms */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm mb-10">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm mb-10">
           <h2 className="text-sm font-semibold text-gray-900 mb-6">Plateformes cibles</h2>
           <div className="flex flex-wrap gap-4">
              <div 

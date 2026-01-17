@@ -138,7 +138,7 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 md:p-8">
       {/* Branding */}
       <div className="mb-8 flex items-center gap-2">
         <img src="/logo.png" alt="CreatorFlow Logo" className="w-10 h-10 object-contain" />
@@ -156,7 +156,7 @@ export default function Onboarding() {
           />
         </div>
 
-        <div className="p-8">
+        <div className="p-6 md:p-8">
           {/* Step 1: Identity */}
           {step === 'identity' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
