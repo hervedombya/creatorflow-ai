@@ -57,7 +57,7 @@ export async function POST(req: Request) {
 
     // 3. Generate Enhanced Prompt with Featherless (Llama)
     const completion = await featherless.chat.completions.create({
-      model: "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      model: "meta-llama/Meta-Llama-3.1-70B-Instruct",
       messages: [
         { role: "system", content: systemMsg },
         { role: "user", content: userMsg },
