@@ -23,14 +23,37 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  // If user is logged in and trying to access /login, redirect to /create
-  if (user && pathname === '/login') {
-    return NextResponse.redirect(new URL('/create', request.url))
+  // 1. Auth Guard
+  // If user is NOT logged in and trying to access protected routes
+  if (!user && (pathname.startsWith('/create') || pathname.startsWith('/onboarding'))) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // If user is NOT logged in and trying to access protected routes, redirect to /login
-  if (!user && pathname.startsWith('/create')) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // 2. Onboarding Guard
+  if (user) {
+    // Check if user has completed onboarding
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_onboarded')
+      .eq('id', user.id)
+      .single()
+
+    const isOnboarded = profile?.is_onboarded ?? false
+
+    // If user is NOT onboarded and trying to access app core -> redirect to onboarding
+    if (!isOnboarded && pathname.startsWith('/create')) {
+      return NextResponse.redirect(new URL('/onboarding', request.url))
+    }
+
+    // If user IS onboarded and trying to access onboarding -> redirect to create
+    if (isOnboarded && pathname.startsWith('/onboarding')) {
+      return NextResponse.redirect(new URL('/create', request.url))
+    }
+
+    // If user is logged in and trying to access login -> redirect to appropriate place
+    if (pathname === '/login') {
+      return NextResponse.redirect(new URL(isOnboarded ? '/create' : '/onboarding', request.url))
+    }
   }
 
   return response

@@ -50,8 +50,6 @@ export function Header() {
         {user && (
           <>
             <Link href="/create" className="text-purple-600 hover:text-purple-700">Créer</Link>
-            <Link href="#" className="hover:text-gray-900">Calendrier</Link>
-            <Link href="#" className="hover:text-gray-900">Bibliothèque</Link>
             <div className="w-px h-4 bg-gray-200" />
           </>
         )}
@@ -60,14 +58,14 @@ export function Header() {
           <div className="w-20 h-8 bg-gray-100 rounded-full animate-pulse" />
         ) : user ? (
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full">
+            <Link href="/profile" className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
               <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white text-xs font-bold">
                 {user.email?.charAt(0).toUpperCase()}
               </div>
               <span className="text-sm text-gray-700 max-w-[120px] truncate">
                 {user.email?.split('@')[0]}
               </span>
-            </div>
+            </Link>
             <Button 
               variant="ghost" 
               size="sm" 
