@@ -9,7 +9,7 @@ export default function LandingPage() {
       <Header />
 
       {/* Hero Section */}
-      <main className="flex flex-col items-center justify-center text-center px-4 pt-20 pb-16 max-w-5xl mx-auto">
+      <main className="flex flex-col items-center justify-center text-center px-4 pt-20 pb-16 max-w-5xl mx-auto overflow-x-hidden w-full">
         
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-purple-600 text-xs font-medium mb-8 border border-purple-100">
@@ -18,7 +18,7 @@ export default function LandingPage() {
         </div>
 
         {/* Heading */}
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-tight">
+        <h1 className="text-4xl md:text-7xl font-bold tracking-tight text-gray-900 mb-6 leading-tight">
           Transformez vos idées en <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-fuchsia-500 to-pink-500">
             contenu viral
@@ -33,13 +33,13 @@ export default function LandingPage() {
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex items-center gap-4 mb-20">
-          <Button asChild size="lg" className="h-12 px-8 text-lg rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-200 hover:shadow-purple-300 transition-all">
+        <div className="flex flex-col sm:flex-row items-center gap-4 mb-20 w-full sm:w-auto">
+          <Button asChild size="lg" className="h-12 px-8 text-lg rounded-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-200 hover:shadow-purple-300 transition-all w-full sm:w-auto">
             <Link href="/create">
               Créer mon premier contenu →
             </Link>
           </Button>
-          <Button variant="outline" size="lg" className="h-12 px-8 text-lg rounded-full border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+          <Button variant="outline" size="lg" className="h-12 px-8 text-lg rounded-full border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 w-full sm:w-auto">
             <Play className="w-4 h-4 mr-2 fill-current" />
             Voir la démo
           </Button>
@@ -47,13 +47,13 @@ export default function LandingPage() {
 
         {/* Mockup Container */}
         <div className="relative w-full max-w-4xl mx-auto">
-          {/* Floating Elements */}
-          <div className="absolute -left-12 top-1/4 animate-bounce duration-[3000ms]">
+          {/* Floating Elements - Hidden on mobile to prevent overflow */}
+          <div className="hidden md:block absolute -left-12 top-1/4 animate-bounce duration-[3000ms]">
             <div className="bg-white p-3 rounded-2xl shadow-xl shadow-purple-100 border border-purple-50">
                <Sparkles className="w-6 h-6 text-purple-500" />
             </div>
           </div>
-          <div className="absolute -right-8 bottom-1/3 animate-bounce duration-[4000ms] delay-700">
+          <div className="hidden md:block absolute -right-8 bottom-1/3 animate-bounce duration-[4000ms] delay-700">
              <div className="bg-white p-3 rounded-2xl shadow-xl shadow-pink-100 border border-pink-50">
                <div className="text-pink-500 font-bold">⚡</div>
             </div>
@@ -72,28 +72,28 @@ export default function LandingPage() {
             </div>
 
             {/* Content Area */}
-            <div className="flex bg-white h-[500px]">
+            <div className="flex bg-white h-[400px] md:h-[500px]">
                {/* Skeleton Sidebar */}
-               <div className="w-16 border-r border-gray-100 p-4 space-y-4">
+               <div className="hidden md:block w-16 border-r border-gray-100 p-4 space-y-4">
                   <div className="w-8 h-8 rounded-lg bg-gray-100" />
                   <div className="w-8 h-8 rounded-lg bg-gray-50" />
                   <div className="w-8 h-8 rounded-lg bg-gray-50" />
                </div>
                
                {/* Skeleton Main */}
-               <div className="flex-1 p-8 flex gap-8">
-                  <div className="flex-1 space-y-4">
+               <div className="flex-1 p-4 md:p-8 flex flex-col md:flex-row gap-4 md:gap-8 overflow-hidden">
+                  <div className="flex-1 space-y-4 w-full">
                     <div className="h-8 bg-gray-100 rounded-full w-1/3" />
-                    <div className="h-32 bg-gray-50 rounded-2xl w-full" />
+                    <div className="h-24 md:h-32 bg-gray-50 rounded-2xl w-full" />
                     <div className="flex gap-4">
-                      <div className="h-24 bg-gray-50 rounded-2xl flex-1" />
-                      <div className="h-24 bg-gray-50 rounded-2xl flex-1" />
-                      <div className="h-24 bg-gray-50 rounded-2xl flex-1" />
+                      <div className="h-16 md:h-24 bg-gray-50 rounded-2xl flex-1" />
+                      <div className="h-16 md:h-24 bg-gray-50 rounded-2xl flex-1" />
+                      <div className="hidden md:block h-24 bg-gray-50 rounded-2xl flex-1" />
                     </div>
                   </div>
                   
                   {/* Right Panel Highlight */}
-                  <div className="w-1/3 bg-purple-100/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                  <div className="hidden md:flex w-1/3 bg-purple-100/50 rounded-2xl p-6 flex-col items-center justify-center text-center relative overflow-hidden">
                      <div className="absolute inset-0 bg-gradient-to-br from-purple-200/40 to-pink-200/40" />
                      <Sparkles className="w-12 h-12 text-purple-400 relative z-10 animate-pulse" />
                   </div>
