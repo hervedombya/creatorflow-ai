@@ -219,10 +219,12 @@ async def generate_endpoint(
     # Parse platforms
     platforms_list = [p.strip() for p in platforms.split(",")]
     
-    # 1) Generate image prompt and caption sequentially to avoid rate limit
+    # 1) Generate caption only (use user text directly for image generation)
     # (Featherless has concurrency limits, so we do them one at a time)
-    master_prompt = build_master_prompt(user_text=user_text)
     caption = generate_caption(user_text=user_text, format=format, platforms=platforms_list)
+    
+    # Use user text directly for image generation (no master prompt)
+    master_prompt = user_text
 
     # 2) Read uploaded image
     image_bytes = await file.read()

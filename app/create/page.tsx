@@ -54,9 +54,9 @@ export default function Create() {
   const referenceInputRef = useRef<HTMLInputElement>(null)
   const productInputRef = useRef<HTMLInputElement>(null)
 
-  // Compress image to reduce file size (max size for Vercel is ~4.5MB)
-  const compressImage = async (file: File, maxSizeMB: number = 2): Promise<File> => {
-    return new Promise((resolve) => {
+  // Compress image aggressively (Vercel limit is 4.5MB, we target 1.5MB to be safe)
+  const compressImage = async (file: File, maxSizeMB: number = 1.5): Promise<File> => {
+    return new Promise((resolve, reject) => {
       const maxSizeBytes = maxSizeMB * 1024 * 1024
       
       // If file is already small enough, return as is
@@ -73,16 +73,16 @@ export default function Create() {
           let width = img.width
           let height = img.height
           
-          // Calculate new dimensions (max 1920px on longest side)
-          const maxDimension = 1920
+          // More aggressive resizing - max 1200px on longest side
+          const maxDimension = 1200
           if (width > height) {
             if (width > maxDimension) {
-              height = (height * maxDimension) / width
+              height = Math.round((height * maxDimension) / width)
               width = maxDimension
             }
           } else {
             if (height > maxDimension) {
-              width = (width * maxDimension) / height
+              width = Math.round((width * maxDimension) / height)
               height = maxDimension
             }
           }
@@ -90,15 +90,20 @@ export default function Create() {
           canvas.width = width
           canvas.height = height
           const ctx = canvas.getContext('2d')
-          ctx?.drawImage(img, 0, 0, width, height)
+          if (!ctx) {
+            reject(new Error('Could not get canvas context'))
+            return
+          }
+          
+          ctx.drawImage(img, 0, 0, width, height)
 
-          // Try different quality levels until we're under the size limit
-          let quality = 0.9
+          // Start with lower quality and decrease more aggressively
+          let quality = 0.7
           const tryCompress = () => {
             canvas.toBlob(
               (blob) => {
                 if (blob) {
-                  if (blob.size <= maxSizeBytes || quality <= 0.1) {
+                  if (blob.size <= maxSizeBytes || quality <= 0.3) {
                     const compressedFile = new File([blob], file.name, {
                       type: 'image/jpeg',
                       lastModified: Date.now(),
@@ -109,7 +114,7 @@ export default function Create() {
                     tryCompress()
                   }
                 } else {
-                  resolve(file) // Fallback to original if compression fails
+                  reject(new Error('Compression failed'))
                 }
               },
               'image/jpeg',
@@ -118,8 +123,10 @@ export default function Create() {
           }
           tryCompress()
         }
+        img.onerror = () => reject(new Error('Failed to load image'))
         img.src = e.target?.result as string
       }
+      reader.onerror = () => reject(new Error('Failed to read file'))
       reader.readAsDataURL(file)
     })
   }
@@ -220,15 +227,22 @@ Creator Context:
 - Platforms: ${platforms.join(', ')}
 `.trim()
 
-      // Validate file size one more time before sending (max 4MB for Vercel)
-      const maxUploadSize = 4 * 1024 * 1024 // 4MB
+      // Always compress to ensure we're under Vercel's limit (1.5MB to be very safe)
+      let imageToUpload = referenceImage
+      const maxUploadSize = 1.5 * 1024 * 1024 // 1.5MB - very safe for Vercel
+      
       if (referenceImage.size > maxUploadSize) {
-        // Compress again if still too large
-        const compressedImage = await compressImage(referenceImage, 3.5) // 3.5MB to be safe
-        formData.append('file', compressedImage)
-      } else {
-        formData.append('file', referenceImage)
+        try {
+          imageToUpload = await compressImage(referenceImage, 1.5)
+        } catch (error) {
+          toast.error('Erreur de compression', {
+            description: 'Impossible de compresser l\'image. Veuillez choisir une image plus petite.'
+          })
+          throw error
+        }
       }
+      
+      formData.append('file', imageToUpload)
 
       formData.append('user_text', contextualPrompt)
       formData.append('format', format)

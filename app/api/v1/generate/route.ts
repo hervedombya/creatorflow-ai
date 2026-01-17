@@ -48,44 +48,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Validate file size (Vercel limit is ~4.5MB for serverless functions)
-    const maxFileSize = 4 * 1024 * 1024; // 4MB to be safe
+    // Validate file size (Vercel limit is ~4.5MB, but we enforce 2MB to be very safe)
+    const maxFileSize = 2 * 1024 * 1024; // 2MB to be very safe
     if (file.size > maxFileSize) {
       return NextResponse.json(
-        { detail: `File too large. Maximum size is ${maxFileSize / 1024 / 1024}MB. Please compress your image.` },
+        { detail: `File too large (${(file.size / 1024 / 1024).toFixed(2)}MB). Maximum size is 2MB. Please compress your image.` },
         { status: 413 }
       );
     }
 
-    // 3. Generate both image prompt AND caption in parallel for speed
-    const imagePromptSystem = 
-      "Tu es un expert en prompt engineering pour modèles d'images " +
-      "(Flux, SDXL, DALL-E, Gemini). Tu génères UN SEUL prompt ultra clair, en anglais, " +
-      "optimisé pour le text-to-image. Tu ne rajoutes aucun commentaire autour.";
-
+    // 3. Generate caption only (use user text directly for image generation)
     const captionSystem = 
       "Tu es un expert en création de contenu pour réseaux sociaux (Instagram, TikTok, Facebook). " +
       "Tu génères des captions engageantes, authentiques et adaptées au format et à la plateforme. " +
       "Utilise des emojis pertinents, un ton naturel et des hooks accrocheurs. " +
       "Retourne UNIQUEMENT la caption, sans guillemets, sans introduction.";
 
-    const imagePromptMessage = `User text: ${userText}\nReturn a single, clean text-to-image prompt in English. No quotes, no extra text.`;
-    
     const formatDescription = format === 'post' ? 'Post Instagram carré' : format === 'story' ? 'Story Instagram' : 'Reel/TikTok';
     const captionMessage = `User request: ${userText}\nFormat: ${formatDescription}\nPlatforms: ${platforms.join(', ')}\n\nGénère une caption parfaite pour ce contenu.`;
 
-    // Generate prompts sequentially to avoid Featherless concurrency limit
-    // (Each 70B request needs 4 units, plan limit is 4, so we can't do parallel)
-    const imagePromptCompletion = await featherless.chat.completions.create({
-      model: FEATHERLESS_MODEL,
-      messages: [
-        { role: "system", content: imagePromptSystem },
-        { role: "user", content: imagePromptMessage },
-      ],
-      temperature: 0.7,
-      max_tokens: 300,
-    });
-
+    // Generate caption only (use user text directly for image)
     const captionCompletion = await featherless.chat.completions.create({
       model: FEATHERLESS_MODEL,
       messages: [
@@ -96,15 +78,7 @@ export async function POST(req: NextRequest) {
       max_tokens: 500,
     });
 
-    const masterPrompt = imagePromptCompletion.choices[0].message.content?.trim();
     const caption = captionCompletion.choices[0].message.content?.trim();
-
-    if (!masterPrompt) {
-      return NextResponse.json(
-        { detail: "Failed to generate master prompt" },
-        { status: 500 }
-      );
-    }
 
     if (!caption) {
       return NextResponse.json(
@@ -112,6 +86,9 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Use user text directly for image generation (no master prompt)
+    const masterPrompt = userText;
 
     // 4. Convert file to base64 for Gemini
     const arrayBuffer = await file.arrayBuffer();
