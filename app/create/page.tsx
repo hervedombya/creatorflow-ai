@@ -13,8 +13,11 @@ import Image from "next/image"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 
-// Backend URL - Python FastAPI server
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000'
+// Backend URL configuration:
+// - If NEXT_PUBLIC_BACKEND_URL is set, use external Python backend (e.g., Railway, Render)
+// - Otherwise, use Next.js API route (works on Vercel without additional deployment)
+// - For local dev with Python backend: set NEXT_PUBLIC_BACKEND_URL=http://127.0.0.1:8000
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '/api/v1'
 
 type Platform = 'instagram' | 'tiktok' | 'snapchat' | 'facebook'
 type Format = 'post' | 'story' | 'reel'
