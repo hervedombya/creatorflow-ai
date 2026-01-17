@@ -17,7 +17,11 @@ export const metadata: Metadata = {
   title: "CreatorFlow AI",
   description: "Transformez vos idées en contenu viral en 30 secondes via l'IA.",
   icons: {
-    icon: "/logo.png",
+    icon: [
+      { url: "/logo.png", type: "image/png" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    apple: "/logo.png",
   },
 };
 
