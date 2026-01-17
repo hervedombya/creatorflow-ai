@@ -1,8 +1,7 @@
 # file: backend/main.py
 import os
-from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, Path, UploadFile, File
 from pydantic import BaseModel
 from openai import OpenAI
 from google import genai
@@ -18,8 +17,8 @@ load_dotenv(dotenv_path=env_path)
 
 # ====== CONFIG ======
 FEATHERLESS_API_KEY = os.getenv("FEATHERLESS_API_KEY")
-# Modèle RAPIDE pour master prompt (8B au lieu de 70B)
-FEATHERLESS_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+# Modèle 70B pour master prompt (meilleure qualité)
+FEATHERLESS_MODEL = "meta-llama/Meta-Llama-3.1-70B-Instruct"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not FEATHERLESS_API_KEY:
@@ -153,7 +152,7 @@ def health_check():
 
 @app.post("/api/v1/generate", response_model=GenerationResponse)
 async def generate_endpoint(
-    user_text: str = Form(...),
+    user_text: str,
     file: UploadFile = File(...)
 ):
     """
