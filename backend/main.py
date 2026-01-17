@@ -1,23 +1,23 @@
 # file: backend/main.py
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from openai import OpenAI
 from google import genai
+from google.genai import types
 from io import BytesIO
 from PIL import Image
 import base64
 from fastapi.middleware.cors import CORSMiddleware
 
-
 # Load environment variables from .env file
 load_dotenv()
 
-
 # ====== CONFIG ======
 FEATHERLESS_API_KEY = os.getenv("FEATHERLESS_API_KEY")
-FEATHERLESS_MODEL = "featherless_ai/meta-llama/Meta-Llama-3.1-70B-Instruct"
+# Modèle RAPIDE pour master prompt (8B au lieu de 70B)
+FEATHERLESS_MODEL = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 if not FEATHERLESS_API_KEY:
@@ -32,15 +32,14 @@ featherless_client = OpenAI(
     base_url="https://api.featherless.ai/v1"
 )
 
-# Gemini client
-genai.configure(api_key=GEMINI_API_KEY)
+# Gemini client (nouveau SDK)
+gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
 app = FastAPI(
     title="CreatorFlow AI - Backend",
     description="API for generating optimized prompts and images",
     version="1.0.0"
 )
-
 
 # CORS for frontend
 app.add_middleware(
@@ -54,15 +53,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 # ====== MODELS ======
 class PromptInput(BaseModel):
     user_text: str
-    image_description: str = ""
-    style: str = "cinematic"
-    mood: str = "epic"
-
 
 
 class GenerationResponse(BaseModel):
@@ -70,36 +63,21 @@ class GenerationResponse(BaseModel):
     image_url: str
 
 
-
-class AnalyzeStyleInput(BaseModel):
-    text_samples: list[str]
-
-
-
-class StyleProfile(BaseModel):
-    tone: str
-    vibe_keywords: list[str]
-    writing_style: str
-
-
-
 # ====== HELPER FUNCTIONS ======
 def build_master_prompt(user_text: str) -> str:
     """
-    Calls Featherless to transform user input into an optimized image prompt.
+    Calls Featherless (8B model - FAST) to transform user input into an optimized image prompt.
     """
     system_message = (
         "Tu es un expert en prompt engineering pour modèles d'images "
-        "(Flux, SDXL, DALL-E). Tu génères UN SEUL prompt ultra clair, en anglais, "
+        "(Flux, SDXL, DALL-E, Gemini). Tu génères UN SEUL prompt ultra clair, en anglais, "
         "optimisé pour le text-to-image. Tu ne rajoutes aucun commentaire autour."
     )
-
 
     user_message = f"""
 User text: {user_text}
 Return a single, clean text-to-image prompt in English. No quotes, no extra text.
 """
-
 
     completion = featherless_client.chat.completions.create(
         model=FEATHERLESS_MODEL,
@@ -111,50 +89,52 @@ Return a single, clean text-to-image prompt in English. No quotes, no extra text
         max_tokens=300,
     )
 
-
     master_prompt = completion.choices[0].message.content.strip()
     return master_prompt
 
 
-
-def generate_image_from_prompt(prompt: str) -> str:
+def generate_image_from_prompt(prompt: str, image_bytes: bytes) -> str:
     """
-    Sends the master prompt to Gemini 2.5 Flash Image and returns the image as base64.
+    Sends image input + master prompt to Gemini 2.5 Flash Image (edit mode).
+    Returns edited image as base64 data URL.
     """
-    if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
-    
     try:
-        # Create Gemini client and call image generation
-        client = genai.Client()
-        response = client.models.generate_images(
-            model="imagen-4.0-generate-001",
-            prompt=prompt,
-            config=genai.types.GenerateImagesConfig(
-                number_of_images=1,
-                quality="high",
-            )
+        # Prepare image part for Gemini (multimodal)
+        image_part = types.Part.from_bytes(
+            data=image_bytes,
+            mime_type="image/jpeg",
         )
-        
-        # Extract the first generated image
-        if response.generated_images and len(response.generated_images) > 0:
-            generated_image = response.generated_images[0].image
-            
-            # Convert PIL Image to base64 string
-            buffered = BytesIO()
-            generated_image.save(buffered, format="PNG")
-            img_base64 = base64.b64encode(buffered.getvalue()).decode()
-            
-            return f"data:image/png;base64,{img_base64}"
-        else:
+
+        # Call Gemini with image + text prompt
+        response = gemini_client.models.generate_content(
+            model="gemini-2.5-flash-image",
+            contents=[prompt, image_part],
+            config=types.GenerateContentConfig(
+                response_modalities=["IMAGE"],
+            ),
+        )
+
+        # Extract image from response
+        generated_image_bytes = None
+        for part in response.parts:
+            if part.inline_data is not None:
+                # part.inline_data.data contient les bytes bruts de l'image
+                generated_image_bytes = part.inline_data.data
+                break
+
+        if generated_image_bytes is None:
             raise HTTPException(status_code=500, detail="No image generated by Gemini")
-    
+
+        # Convertir les bytes directement en base64 (pas besoin de PIL)
+        img_base64 = base64.b64encode(generated_image_bytes).decode()
+
+        return f"data:image/png;base64,{img_base64}"
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=f"Failed to generate image: {str(e)}"
         )
-
 
 
 
@@ -164,24 +144,84 @@ def root():
     return {"status": "ok", "message": "CreatorFlow AI - Backend API"}
 
 
-
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
 
 
-
 @app.post("/api/v1/generate", response_model=GenerationResponse)
-def generate_endpoint(payload: PromptInput):
-    """Generate image from user input."""
-    master_prompt = build_master_prompt(
-        user_text=payload.user_text,
-    )
+async def generate_endpoint(
+    user_text: str,
+    file: UploadFile = File(...)
+):
+    """
+    Generate edited image from user text + uploaded image.
     
-    image_url = generate_image_from_prompt(master_prompt)
+    Usage:
+    - user_text: "Ajoute moi une casquette gucci"
+    - file: image.jpg (upload from frontend)
+    """
+    # 1) Build master prompt with Featherless (fast 8B model)
+    master_prompt = build_master_prompt(user_text=user_text)
 
+    # 2) Read uploaded image
+    image_bytes = await file.read()
+
+    # 3) Send to Gemini for editing
+    image_url = generate_image_from_prompt(master_prompt, image_bytes)
 
     return GenerationResponse(
         master_prompt=master_prompt,
         image_url=image_url,
     )
+
+
+# ====== TEST LOCAL (en bas du fichier) ======
+if __name__ == "__main__":
+    import sys
+
+    # Usage: python main.py "text_here" path/to/image.jpg
+    if len(sys.argv) < 3:
+        print("Usage: python main.py '<user_text>' '<image_path>'")
+        print("Example: python main.py 'Ajoute moi une casquette gucci' input.jpeg")
+        sys.exit(1)
+
+    user_text = sys.argv[1]
+    image_path = sys.argv[2]
+
+    print(f"\n=== CreatorFlow AI - Test Local ===")
+    print(f"User text: {user_text}")
+    print(f"Image path: {image_path}\n")
+
+    # 1) Build master prompt
+    print("📝 Building master prompt...")
+    prompt = build_master_prompt(user_text)
+    print(f"✓ Master Prompt:\n{prompt}\n")
+
+    # 2) Load image
+    print(f"📷 Loading image from {image_path}...")
+    if not os.path.exists(image_path):
+        print(f"❌ File not found: {image_path}")
+        sys.exit(1)
+
+    with open(image_path, "rb") as f:
+        image_bytes = f.read()
+    print(f"✓ Image loaded ({len(image_bytes)} bytes)\n")
+
+    # 3) Generate edited image
+    print("🎨 Generating edited image with Gemini...")
+    image_data_url = generate_image_from_prompt(prompt, image_bytes)
+    print(f"✓ Image generated\n")
+
+    # 4) Save result
+    print("💾 Saving result...")
+    header, b64data = image_data_url.split(",", 1)
+    img_bytes = base64.b64decode(b64data)
+
+    output_path = "test_gucci.png"
+    with open(output_path, "wb") as f:
+        f.write(img_bytes)
+
+    print(f"✓ Image saved to: {output_path}")
+    print(f"✓ Size: {len(img_bytes)} bytes\n")
+    print("=== Done ===\n")
