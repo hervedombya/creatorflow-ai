@@ -1,4 +1,11 @@
+# CreatorFlow AI
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## 🌐 Links
+
+- **Production**: [https://creatorflow-ai-one.vercel.app/](https://creatorflow-ai-one.vercel.app/)
+- **MVP Presentation**: [https://gamma.app/docs/CreatorFlow-AI--k8822qmo6m6chxm?mode=doc](https://gamma.app/docs/CreatorFlow-AI--k8822qmo6m6chxm?mode=doc)
 
 ## Getting Started
 
