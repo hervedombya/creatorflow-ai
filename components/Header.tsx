@@ -38,9 +38,10 @@ export function Header() {
   return (
     <header className="px-6 py-4 flex items-center justify-between bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
+        {/* <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
           <Sparkles className="w-5 h-5 fill-current" />
-        </div>
+        </div> */}
+        <img src="/logo.png" alt="CreatorFlow Logo" className="w-8 h-8 object-contain" />
         <Link href="/" className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
           CreatorFlow AI
         </Link>

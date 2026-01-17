@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Sparkles, Save, Loader2, Share2, User } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { Header } from "@/components/Header"
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -114,81 +114,94 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Mon Profil Créateur</h1>
-            <p className="text-gray-500 mt-1">Gérez vos préférences pour une IA plus pertinente.</p>
-          </div>
-          <Button onClick={handleSave} disabled={saving} className="bg-purple-600 hover:bg-purple-700">
-            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            Sauvegarder
-          </Button>
-        </div>
-
-        {/* Identity Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
-             <User className="w-5 h-5 text-purple-600" />
-             <h2 className="text-lg font-semibold text-gray-900">Identité</h2>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Mon Profil Créateur</h1>
+              <p className="text-gray-500 mt-1">Gérez vos préférences pour une IA plus pertinente.</p>
+            </div>
+            <Button onClick={handleSave} disabled={saving} className="bg-purple-600 hover:bg-purple-700">
+              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              Sauvegarder
+            </Button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label>Nom / Pseudo</Label>
-              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          {/* Identity Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
+               <User className="w-5 h-5 text-purple-600" />
+               <h2 className="text-lg font-semibold text-gray-900">Identité</h2>
             </div>
-            <div className="space-y-2">
-               <Label>Sous-niche</Label>
-               <Input value={subNiche} onChange={(e) => setSubNiche(e.target.value)} placeholder="Ex: Skincare coréen" />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label>Type de Créateur</Label>
-              <select 
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                value={creatorType}
-                onChange={(e) => setCreatorType(e.target.value)}
-              >
-                <option value="">Sélectionner...</option>
-                <option value="solo">Créateur Solo</option>
-                <option value="micro">Micro-influenceur (1k-10k)</option>
-                <option value="brand">Marque / Business</option>
-                <option value="ugc">Créateur UGC</option>
-              </select>
-            </div>
-             <div className="space-y-2 md:col-span-2">
-              <Label>Niches (Max 3)</Label>
-              <div className="flex flex-wrap gap-2">
-                {["Beauté", "Mode", "Fitness", "Food", "Voyage", "Gaming", "Business", "Tech", "Lifestyle", "Humour"].map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => toggleSelection(item, niches, setNiches, 3)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                      niches.includes(item) ? "bg-purple-100 text-purple-700 border border-purple-200" : "bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label>Nom / Pseudo</Label>
+                <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                 <Label>Sous-niche</Label>
+                 <Input value={subNiche} onChange={(e) => setSubNiche(e.target.value)} placeholder="Ex: Skincare coréen" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Type de Créateur</Label>
+                <select 
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                  value={creatorType}
+                  onChange={(e) => setCreatorType(e.target.value)}
+                >
+                  <option value="">Sélectionner...</option>
+                  <option value="solo">Créateur Solo</option>
+                  <option value="micro">Micro-influenceur (1k-10k)</option>
+                  <option value="brand">Marque / Business</option>
+                  <option value="ugc">Créateur UGC</option>
+                </select>
+              </div>
+               <div className="space-y-2 md:col-span-2">
+                <Label>Niches (Max 3)</Label>
+                <div className="flex flex-wrap gap-2">
+                  {["Beauté", "Mode", "Fitness", "Food", "Voyage", "Gaming", "Business", "Tech", "Lifestyle", "Humour"].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => toggleSelection(item, niches, setNiches, 3)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        niches.includes(item) ? "bg-purple-100 text-purple-700 border border-purple-200" : "bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100"
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Style Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-          <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
-             <Sparkles className="w-5 h-5 text-pink-500" />
-             <h2 className="text-lg font-semibold text-gray-900">Style & Ton</h2>
-          </div>
-          
-           <div className="space-y-4">
-             <div className="space-y-2">
-              <Label>Ton de voix (Max 3)</Label>
-              <div className="flex flex-wrap gap-2">
-                {["Humour", "Pro", "Inspirant", "Amical", "Éducatif", "Direct", "Authentique"].map((item) => (
+          {/* Style Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
+               <Sparkles className="w-5 h-5 text-pink-500" />
+               <h2 className="text-lg font-semibold text-gray-900">Style & Ton</h2>
+            </div>
+            
+             <div className="space-y-4">
+               <div className="space-y-2">
+                <Label>Ton de voix (Max 3)</Label>
+                <div className="flex flex-wrap gap-2">
+                {[
+                  "😄 Humoristique / Drôle",
+                  "💼 Professionnel / Expert",
+                  "💕 Inspirant / Motivant",
+                  "😎 Décontracté / Amical",
+                  "📚 Éducatif / Pédagogique",
+                  "✨ Aspirationnel / Lifestyle",
+                  "💪 Direct / Sans filtre",
+                  "🌈 Positif / Optimiste",
+                  "🤝 Authentique / Transparent",
+                  "🎭 Théâtral / Dramatique"
+                ].map((item) => (
                   <button
                     key={item}
                     onClick={() => toggleSelection(item, tones, setTones, 3)}
@@ -200,12 +213,23 @@ export default function ProfilePage() {
                   </button>
                 ))}
               </div>
-            </div>
+              </div>
 
-            <div className="space-y-2">
-              <Label>Esthétique Visuelle (Max 3)</Label>
-              <div className="flex flex-wrap gap-2">
-                {["Minimaliste", "Coloré", "Sombre", "Lumineux", "Artistique", "Naturel", "Luxe", "Urbain"].map((item) => (
+              <div className="space-y-2">
+                <Label>Esthétique Visuelle (Max 3)</Label>
+                <div className="flex flex-wrap gap-2">
+                {[
+                  "⚪ Minimaliste / Épuré",
+                  "🌈 Coloré / Vibrant",
+                  "🖤 Sombre / Moody",
+                  "☀️ Lumineux / Aéré",
+                  "🎨 Artistique / Créatif",
+                  "📸 Naturel / Authentique",
+                  "✨ Glamour / Luxe",
+                  "🏙️ Urbain / Streetwear",
+                  "🌿 Nature / Organique",
+                  "🔮 Futuriste / Tech"
+                ].map((item) => (
                   <button
                     key={item}
                     onClick={() => toggleSelection(item, visualStyles, setVisualStyles, 3)}
@@ -217,69 +241,70 @@ export default function ProfilePage() {
                   </button>
                 ))}
               </div>
+              </div>
+              
+               <div className="space-y-2">
+                <Label>Fréquence d'emojis</Label>
+                <div className="flex gap-2">
+                  {["Aucun", "Peu", "Moyen", "Beaucoup"].map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => setEmojiFreq(item)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
+                        emojiFreq === item ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </div>
+             </div>
+          </div>
+
+          {/* Goals Section */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+             <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
+               <Share2 className="w-5 h-5 text-blue-500" />
+               <h2 className="text-lg font-semibold text-gray-900">Objectifs</h2>
             </div>
-            
-             <div className="space-y-2">
-              <Label>Fréquence d'emojis</Label>
-              <div className="flex gap-2">
-                {["Aucun", "Peu", "Moyen", "Beaucoup"].map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => setEmojiFreq(item)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all border ${
-                      emojiFreq === item ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                 <Label>Plateforme Principale</Label>
+                  <div className="flex flex-wrap gap-2">
+                      {["Instagram", "TikTok", "LinkedIn", "Facebook", "YouTube"].map((item) => (
+                        <button
+                          key={item}
+                          onClick={() => setPrimaryPlatform(item)}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+                            primaryPlatform === item ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 hover:bg-gray-50"
+                          }`}
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+              </div>
+               <div className="space-y-2">
+                <Label>Objectif Principal</Label>
+                <select 
+                  className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                  value={mainObjective}
+                  onChange={(e) => setMainObjective(e.target.value)}
+                >
+                  <option value="">Sélectionner...</option>
+                  <option value="growth">Croissance (Abonnés)</option>
+                  <option value="sales">Vente / Conversion</option>
+                  <option value="engagement">Engagement Communauté</option>
+                  <option value="branding">Personal Branding</option>
+                  <option value="education">Éducation</option>
+                </select>
               </div>
             </div>
-           </div>
-        </div>
-
-        {/* Goals Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
-           <div className="flex items-center gap-2 border-b border-gray-100 pb-4">
-             <Share2 className="w-5 h-5 text-blue-500" />
-             <h2 className="text-lg font-semibold text-gray-900">Objectifs</h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-               <Label>Plateforme Principale</Label>
-                <div className="flex flex-wrap gap-2">
-                    {["Instagram", "TikTok", "LinkedIn", "Facebook", "YouTube"].map((item) => (
-                      <button
-                        key={item}
-                        onClick={() => setPrimaryPlatform(item)}
-                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
-                          primaryPlatform === item ? "border-purple-500 bg-purple-50 text-purple-700" : "border-gray-200 hover:bg-gray-50"
-                        }`}
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-            </div>
-             <div className="space-y-2">
-              <Label>Objectif Principal</Label>
-              <select 
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                value={mainObjective}
-                onChange={(e) => setMainObjective(e.target.value)}
-              >
-                <option value="">Sélectionner...</option>
-                <option value="growth">Croissance (Abonnés)</option>
-                <option value="sales">Vente / Conversion</option>
-                <option value="engagement">Engagement Communauté</option>
-                <option value="branding">Personal Branding</option>
-                <option value="education">Éducation</option>
-              </select>
-            </div>
-          </div>
         </div>
-
       </div>
     </div>
   )

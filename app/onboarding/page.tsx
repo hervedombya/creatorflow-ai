@@ -141,9 +141,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
       {/* Branding */}
       <div className="mb-8 flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
-          <Sparkles className="w-5 h-5 fill-current" />
-        </div>
+        <img src="/logo.png" alt="CreatorFlow Logo" className="w-10 h-10 object-contain" />
         <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
           CreatorFlow Profile
         </span>
@@ -233,7 +231,18 @@ export default function Onboarding() {
                 <div className="space-y-3">
                   <Label>Ton de voix (Max 3)</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["Humour", "Pro", "Inspirant", "Amical", "Éducatif", "Direct", "Authentique"].map((item) => (
+                    {[
+                      "😄 Humoristique / Drôle",
+                      "💼 Professionnel / Expert",
+                      "💕 Inspirant / Motivant",
+                      "😎 Décontracté / Amical",
+                      "📚 Éducatif / Pédagogique",
+                      "✨ Aspirationnel / Lifestyle",
+                      "💪 Direct / Sans filtre",
+                      "🌈 Positif / Optimiste",
+                      "🤝 Authentique / Transparent",
+                      "🎭 Théâtral / Dramatique"
+                    ].map((item) => (
                       <button
                         key={item}
                         onClick={() => toggleSelection(item, tones, setTones, 3)}
@@ -250,7 +259,18 @@ export default function Onboarding() {
                 <div className="space-y-3">
                   <Label>Esthétique Visuelle (Max 3)</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["Minimaliste", "Coloré", "Sombre", "Lumineux", "Artistique", "Naturel", "Luxe", "Urbain"].map((item) => (
+                    {[
+                      "⚪ Minimaliste / Épuré",
+                      "🌈 Coloré / Vibrant",
+                      "🖤 Sombre / Moody",
+                      "☀️ Lumineux / Aéré",
+                      "🎨 Artistique / Créatif",
+                      "📸 Naturel / Authentique",
+                      "✨ Glamour / Luxe",
+                      "🏙️ Urbain / Streetwear",
+                      "🌿 Nature / Organique",
+                      "🔮 Futuriste / Tech"
+                    ].map((item) => (
                       <button
                         key={item}
                         onClick={() => toggleSelection(item, visualStyles, setVisualStyles, 3)}

@@ -27,9 +27,7 @@ export default async function LoginPage({
 
         <div className="relative z-10">
           <div className="flex items-center gap-3 text-white">
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Sparkles className="w-6 h-6" />
-            </div>
+            <img src="/logo.png" alt="CreatorFlow Logo" className="w-10 h-10 object-contain brightness-0 invert" />
             <span className="text-2xl font-bold">CreatorFlow AI</span>
           </div>
         </div>
@@ -61,9 +59,7 @@ export default async function LoginPage({
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-10">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
-              <Sparkles className="w-6 h-6" />
-            </div>
+            <img src="/logo.png" alt="CreatorFlow Logo" className="w-10 h-10 object-contain" />
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
               CreatorFlow AI
             </span>
