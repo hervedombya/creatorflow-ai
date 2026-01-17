@@ -75,18 +75,15 @@ class GenerationResponse(BaseModel):
 # ====== HELPER FUNCTIONS ======
 def build_master_prompt(user_text: str) -> str:
     """
-    Calls Featherless to transform user input into an optimized image prompt.
+    Simple transformation of user text into image prompt (no complex optimization).
     """
     system_message = (
-        "Tu es un expert en prompt engineering pour modèles d'images "
-        "(Flux, SDXL, DALL-E, Gemini). Tu génères UN SEUL prompt ultra clair, en anglais, "
-        "optimisé pour le text-to-image. Tu ne rajoutes aucun commentaire autour."
+        "Transforme le texte de l'utilisateur en un prompt simple et clair pour génération d'image. "
+        "Garde le sens original, traduis en anglais si nécessaire, et rends-le concis. "
+        "Retourne UNIQUEMENT le prompt, sans guillemets, sans commentaires."
     )
 
-    user_message = f"""
-User text: {user_text}
-Return a single, clean text-to-image prompt in English. No quotes, no extra text.
-"""
+    user_message = f"User text: {user_text}\nTransforme ce texte en un prompt simple pour génération d'image."
 
     completion = featherless_client.chat.completions.create(
         model=FEATHERLESS_MODEL,
@@ -94,8 +91,8 @@ Return a single, clean text-to-image prompt in English. No quotes, no extra text
             {"role": "system", "content": system_message},
             {"role": "user", "content": user_message},
         ],
-        temperature=0.7,
-        max_tokens=300,
+        temperature=0.5,
+        max_tokens=200,
     )
 
     master_prompt = completion.choices[0].message.content.strip()
@@ -219,12 +216,10 @@ async def generate_endpoint(
     # Parse platforms
     platforms_list = [p.strip() for p in platforms.split(",")]
     
-    # 1) Generate caption only (use user text directly for image generation)
+    # 1) Generate simple prompt and caption sequentially to avoid rate limit
     # (Featherless has concurrency limits, so we do them one at a time)
+    master_prompt = build_master_prompt(user_text=user_text)
     caption = generate_caption(user_text=user_text, format=format, platforms=platforms_list)
-    
-    # Use user text directly for image generation (no master prompt)
-    master_prompt = user_text
 
     # 2) Read uploaded image
     image_bytes = await file.read()
