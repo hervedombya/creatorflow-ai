@@ -1,28 +1,12 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Sparkles, Play, Star } from "lucide-react"
+import { Header } from "@/components/Header"
+import { Sparkles, Play } from "lucide-react"
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
-            <Sparkles className="w-5 h-5 fill-current" />
-          </div>
-          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
-            CreatorFlow AI
-          </span>
-        </div>
-
-        <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-          <Link href="/login" className="hover:text-purple-600 transition-colors">Connexion</Link>
-          <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white rounded-full px-6">
-            <Link href="/create">Commencer</Link>
-          </Button>
-        </div>
-      </nav>
+      <Header />
 
       {/* Hero Section */}
       <main className="flex flex-col items-center justify-center text-center px-4 pt-20 pb-16 max-w-5xl mx-auto">

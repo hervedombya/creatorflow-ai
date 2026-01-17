@@ -2,31 +2,14 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { Header } from "@/components/Header"
 import { ArrowLeft, Sparkles, Upload, Square, Smartphone, Video } from "lucide-react"
 import Link from "next/link"
 
 export default function Create() {
   return (
     <div className="min-h-screen bg-gray-50/50">
-      {/* Header */}
-      <header className="px-6 py-4 flex items-center justify-between bg-white border-b border-gray-100 sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
-            <Sparkles className="w-5 h-5 fill-current" />
-          </div>
-          <Link href="/" className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
-            CreatorFlow AI
-          </Link>
-        </div>
-        <div className="flex items-center gap-6 text-sm font-medium text-gray-500">
-            <Link href="/create" className="text-purple-600">Créer</Link>
-            <Link href="#" className="hover:text-gray-900">Calendrier</Link>
-            <Link href="#" className="hover:text-gray-900">Bibliothèque</Link>
-            <div className="w-px h-4 bg-gray-200" />
-            <span>Connexion</span>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white rounded-full">Commencer</Button>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-3xl mx-auto px-4 py-12">
         {/* Back Link */}
