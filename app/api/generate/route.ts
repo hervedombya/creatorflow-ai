@@ -57,8 +57,9 @@ export async function POST(req: Request) {
     const userMsg = `User Request: ${payload.user_text}\n\nGenerate the optimized image prompt now.`;
 
     // 3. Generate Enhanced Prompt with Featherless (Llama)
+    // Using Llama 3.3 70B (replaces deprecated 3.1)
     const completion = await featherless.chat.completions.create({
-      model: "featherless_ai/meta-llama/Meta-Llama-3.1-70B-Instruct",
+      model: "meta-llama/Llama-3.3-70B-Instruct",
       messages: [
         { role: "system", content: systemMsg },
         { role: "user", content: userMsg },
