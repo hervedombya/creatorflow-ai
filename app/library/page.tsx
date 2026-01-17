@@ -21,7 +21,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 import { toast } from "sonner"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
 type GeneratedContent = {
   id: string
@@ -44,6 +44,8 @@ export default function Library() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedContent, setSelectedContent] = useState<GeneratedContent | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [contentToDelete, setContentToDelete] = useState<string | null>(null)
 
   useEffect(() => {
     loadContents()
@@ -98,19 +100,26 @@ export default function Library() {
     setFilteredContents(filtered)
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce contenu ?')) return
+  const handleDelete = (id: string) => {
+    setContentToDelete(id)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!contentToDelete) return
 
     try {
       const supabase = createClient()
       const { error } = await supabase
         .from('generated_content')
         .delete()
-        .eq('id', id)
+        .eq('id', contentToDelete)
 
       if (error) throw error
 
-      toast.success('Contenu supprimé')
+      toast.success('Contenu supprimé avec succès')
+      setIsDeleteDialogOpen(false)
+      setContentToDelete(null)
       loadContents()
     } catch (error: any) {
       toast.error('Erreur lors de la suppression', {
@@ -408,6 +417,33 @@ export default function Library() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Supprimer ce contenu ?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600">
+            Cette action est irréversible. Le contenu sera définitivement supprimé de votre bibliothèque.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsDeleteDialogOpen(false)
+              setContentToDelete(null)
+            }}>
+              Annuler
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Supprimer
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

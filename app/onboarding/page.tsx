@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Sparkles, ArrowRight, CheckCircle2, Loader2, ArrowLeft } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 type Step = 'identity' | 'style' | 'goals' | 'complete'
 
@@ -121,7 +122,9 @@ export default function Onboarding() {
 
     } catch (error: any) {
       console.error('Onboarding error:', error)
-      alert(`Erreur: ${error.message || error.details || "Une erreur inconnue est survenue."}`)
+      toast.error('Erreur lors de la sauvegarde', {
+        description: error.message || error.details || "Une erreur inconnue est survenue."
+      })
     } finally {
       setLoading(false)
     }
