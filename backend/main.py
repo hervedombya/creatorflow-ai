@@ -1,7 +1,8 @@
 # file: backend/main.py
 import os
+from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Path, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from openai import OpenAI
 from google import genai
@@ -11,9 +12,15 @@ from PIL import Image
 import base64
 from fastapi.middleware.cors import CORSMiddleware
 
-# Load environment variables from backend/.env file
+# Load environment variables
+# In production (Railway/Render), env vars are set directly
+# In local dev, load from backend/.env file
 env_path = Path(__file__).parent / '.env'
-load_dotenv(dotenv_path=env_path)
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    # Production: load from environment (Railway/Render sets these)
+    load_dotenv()
 
 # ====== CONFIG ======
 FEATHERLESS_API_KEY = os.getenv("FEATHERLESS_API_KEY")
@@ -62,12 +69,13 @@ class PromptInput(BaseModel):
 class GenerationResponse(BaseModel):
     master_prompt: str
     image_url: str
+    caption: str
 
 
 # ====== HELPER FUNCTIONS ======
 def build_master_prompt(user_text: str) -> str:
     """
-    Calls Featherless (8B model - FAST) to transform user input into an optimized image prompt.
+    Calls Featherless to transform user input into an optimized image prompt.
     """
     system_message = (
         "Tu es un expert en prompt engineering pour modèles d'images "
@@ -92,6 +100,48 @@ Return a single, clean text-to-image prompt in English. No quotes, no extra text
 
     master_prompt = completion.choices[0].message.content.strip()
     return master_prompt
+
+
+def generate_caption(user_text: str, format: str = "post", platforms: list = None) -> str:
+    """
+    Generates an engaging caption for social media content.
+    """
+    if platforms is None:
+        platforms = ["instagram"]
+    
+    system_message = (
+        "Tu es un expert en création de contenu pour réseaux sociaux (Instagram, TikTok, Facebook). "
+        "Tu génères des captions engageantes, authentiques et adaptées au format et à la plateforme. "
+        "Utilise des emojis pertinents, un ton naturel et des hooks accrocheurs. "
+        "Retourne UNIQUEMENT la caption, sans guillemets, sans introduction."
+    )
+
+    format_description = {
+        "post": "Post Instagram carré",
+        "story": "Story Instagram",
+        "reel": "Reel/TikTok"
+    }.get(format, "Post Instagram carré")
+
+    user_message = f"""
+User request: {user_text}
+Format: {format_description}
+Platforms: {', '.join(platforms)}
+
+Génère une caption parfaite pour ce contenu.
+"""
+
+    completion = featherless_client.chat.completions.create(
+        model=FEATHERLESS_MODEL,
+        messages=[
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_message},
+        ],
+        temperature=0.8,
+        max_tokens=500,
+    )
+
+    caption = completion.choices[0].message.content.strip()
+    return caption
 
 
 def generate_image_from_prompt(prompt: str, image_bytes: bytes) -> str:
@@ -152,18 +202,27 @@ def health_check():
 
 @app.post("/api/v1/generate", response_model=GenerationResponse)
 async def generate_endpoint(
-    user_text: str,
-    file: UploadFile = File(...)
+    user_text: str = Form(...),
+    file: UploadFile = File(...),
+    format: str = Form("post"),
+    platforms: str = Form("instagram")
 ):
     """
-    Generate edited image from user text + uploaded image.
+    Generate edited image and caption from user text + uploaded image.
     
     Usage:
     - user_text: "Ajoute moi une casquette gucci"
     - file: image.jpg (upload from frontend)
+    - format: "post", "story", or "reel" (optional, default: "post")
+    - platforms: comma-separated list like "instagram,tiktok" (optional, default: "instagram")
     """
-    # 1) Build master prompt with Featherless (fast 8B model)
+    # Parse platforms
+    platforms_list = [p.strip() for p in platforms.split(",")]
+    
+    # 1) Generate image prompt and caption sequentially to avoid rate limit
+    # (Featherless has concurrency limits, so we do them one at a time)
     master_prompt = build_master_prompt(user_text=user_text)
+    caption = generate_caption(user_text=user_text, format=format, platforms=platforms_list)
 
     # 2) Read uploaded image
     image_bytes = await file.read()
@@ -174,6 +233,7 @@ async def generate_endpoint(
     return GenerationResponse(
         master_prompt=master_prompt,
         image_url=image_url,
+        caption=caption,
     )
 
 
