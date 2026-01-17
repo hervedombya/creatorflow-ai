@@ -2,31 +2,15 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { Header } from "@/components/Header"
+import { InstagramIcon, TikTokIcon, SnapchatIcon, FacebookIcon } from "@/components/icons/SocialIcons"
 import { ArrowLeft, Sparkles, Upload, Square, Smartphone, Video } from "lucide-react"
 import Link from "next/link"
 
 export default function Create() {
   return (
     <div className="min-h-screen bg-gray-50/50">
-      {/* Header */}
-      <header className="px-6 py-4 flex items-center justify-between bg-white border-b border-gray-100 sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
-            <Sparkles className="w-5 h-5 fill-current" />
-          </div>
-          <Link href="/" className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-500">
-            CreatorFlow AI
-          </Link>
-        </div>
-        <div className="flex items-center gap-6 text-sm font-medium text-gray-500">
-            <Link href="/create" className="text-purple-600">Créer</Link>
-            <Link href="#" className="hover:text-gray-900">Calendrier</Link>
-            <Link href="#" className="hover:text-gray-900">Bibliothèque</Link>
-            <div className="w-px h-4 bg-gray-200" />
-            <span>Connexion</span>
-            <Button className="bg-purple-600 hover:bg-purple-700 text-white rounded-full">Commencer</Button>
-        </div>
-      </header>
+      <Header />
 
       <main className="max-w-3xl mx-auto px-4 py-12">
         {/* Back Link */}
@@ -119,21 +103,25 @@ export default function Create() {
           <div className="flex flex-wrap gap-4">
              <div className="flex items-center space-x-2 border border-purple-200 bg-purple-50 rounded-lg px-4 py-3 cursor-pointer">
                 <Checkbox id="instagram" defaultChecked className="border-purple-400 data-[state=checked]:bg-purple-600" />
+                <InstagramIcon className="w-5 h-5 text-pink-600" />
                 <Label htmlFor="instagram" className="text-sm font-medium text-purple-900 cursor-pointer">Instagram</Label>
              </div>
              
              <div className="flex items-center space-x-2 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-50 cursor-pointer">
                 <Checkbox id="tiktok" />
+                <TikTokIcon className="w-5 h-5 text-gray-900" />
                 <Label htmlFor="tiktok" className="text-sm font-medium text-gray-700 cursor-pointer">TikTok</Label>
              </div>
 
              <div className="flex items-center space-x-2 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-50 cursor-pointer">
                 <Checkbox id="snapchat" />
+                <SnapchatIcon className="w-5 h-5 text-yellow-400" />
                 <Label htmlFor="snapchat" className="text-sm font-medium text-gray-700 cursor-pointer">Snapchat</Label>
              </div>
 
              <div className="flex items-center space-x-2 border border-gray-200 rounded-lg px-4 py-3 hover:bg-gray-50 cursor-pointer">
                 <Checkbox id="facebook" />
+                <FacebookIcon className="w-5 h-5 text-blue-600" />
                 <Label htmlFor="facebook" className="text-sm font-medium text-gray-700 cursor-pointer">Facebook</Label>
              </div>
           </div>
