@@ -48,6 +48,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate file size (Vercel limit is ~4.5MB for serverless functions)
+    const maxFileSize = 4 * 1024 * 1024; // 4MB to be safe
+    if (file.size > maxFileSize) {
+      return NextResponse.json(
+        { detail: `File too large. Maximum size is ${maxFileSize / 1024 / 1024}MB. Please compress your image.` },
+        { status: 413 }
+      );
+    }
+
     // 3. Generate both image prompt AND caption in parallel for speed
     const imagePromptSystem = 
       "Tu es un expert en prompt engineering pour modèles d'images " +

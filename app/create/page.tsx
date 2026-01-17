@@ -54,17 +54,99 @@ export default function Create() {
   const referenceInputRef = useRef<HTMLInputElement>(null)
   const productInputRef = useRef<HTMLInputElement>(null)
 
+  // Compress image to reduce file size (max size for Vercel is ~4.5MB)
+  const compressImage = async (file: File, maxSizeMB: number = 2): Promise<File> => {
+    return new Promise((resolve) => {
+      const maxSizeBytes = maxSizeMB * 1024 * 1024
+      
+      // If file is already small enough, return as is
+      if (file.size <= maxSizeBytes) {
+        resolve(file)
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          let width = img.width
+          let height = img.height
+          
+          // Calculate new dimensions (max 1920px on longest side)
+          const maxDimension = 1920
+          if (width > height) {
+            if (width > maxDimension) {
+              height = (height * maxDimension) / width
+              width = maxDimension
+            }
+          } else {
+            if (height > maxDimension) {
+              width = (width * maxDimension) / height
+              height = maxDimension
+            }
+          }
+
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          ctx?.drawImage(img, 0, 0, width, height)
+
+          // Try different quality levels until we're under the size limit
+          let quality = 0.9
+          const tryCompress = () => {
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  if (blob.size <= maxSizeBytes || quality <= 0.1) {
+                    const compressedFile = new File([blob], file.name, {
+                      type: 'image/jpeg',
+                      lastModified: Date.now(),
+                    })
+                    resolve(compressedFile)
+                  } else {
+                    quality -= 0.1
+                    tryCompress()
+                  }
+                } else {
+                  resolve(file) // Fallback to original if compression fails
+                }
+              },
+              'image/jpeg',
+              quality
+            )
+          }
+          tryCompress()
+        }
+        img.src = e.target?.result as string
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
   // Handle file selection
-  const handleFileSelect = (
+  const handleFileSelect = async (
     file: File | null, 
     setImage: (f: File | null) => void, 
     setPreview: (s: string | null) => void
   ) => {
     if (file) {
-      setImage(file)
+      // Validate file size (max 10MB before compression)
+      const maxSizeBeforeCompression = 10 * 1024 * 1024
+      if (file.size > maxSizeBeforeCompression) {
+        toast.error('Image trop volumineuse', {
+          description: 'Veuillez choisir une image de moins de 10MB'
+        })
+        return
+      }
+
+      // Compress image if needed
+      const compressedFile = await compressImage(file)
+      setImage(compressedFile)
+      
       const reader = new FileReader()
       reader.onloadend = () => setPreview(reader.result as string)
-      reader.readAsDataURL(file)
+      reader.readAsDataURL(compressedFile)
     }
   }
 
@@ -138,8 +220,17 @@ Creator Context:
 - Platforms: ${platforms.join(', ')}
 `.trim()
 
+      // Validate file size one more time before sending (max 4MB for Vercel)
+      const maxUploadSize = 4 * 1024 * 1024 // 4MB
+      if (referenceImage.size > maxUploadSize) {
+        // Compress again if still too large
+        const compressedImage = await compressImage(referenceImage, 3.5) // 3.5MB to be safe
+        formData.append('file', compressedImage)
+      } else {
+        formData.append('file', referenceImage)
+      }
+
       formData.append('user_text', contextualPrompt)
-      formData.append('file', referenceImage)
       formData.append('format', format)
       formData.append('platforms', platforms.join(','))
 
