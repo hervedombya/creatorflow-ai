@@ -40,14 +40,11 @@ MODELS_TO_TEST = [
 
 # Test input
 TEST_BRIEF = {
-    "user_text": "Un créateur de contenu qui parle de productivité et minimalisme avec une touche d'humour dark",
-    "image_description": "Un bureau minimaliste avec un café, un laptop, et une plante",
-    "style": "cinematic, moody",
-    "mood": "introspective yet witty",
+    "user_text": "Je veux une image de moi avec une casquette gucci",
 }
 
 
-def build_master_prompt(model: str, user_text: str, image_description: str, style: str, mood: str) -> dict:
+def build_master_prompt(model: str, user_text: str) -> dict:
     """Test a specific model with the master prompt task."""
     
     system_message = (
@@ -58,9 +55,6 @@ def build_master_prompt(model: str, user_text: str, image_description: str, styl
 
     user_message = f"""
 User text: {user_text}
-Image description / elements: {image_description}
-Target style: {style}
-Mood: {mood}
 
 Return a single, clean text-to-image prompt in English. No quotes, no extra text.
 """
@@ -105,8 +99,6 @@ def test_all_models():
     print("="*80)
     print(f"\nTest Brief:")
     print(f"  User: {TEST_BRIEF['user_text']}")
-    print(f"  Image: {TEST_BRIEF['image_description']}")
-    print(f"  Style: {TEST_BRIEF['style']}")
     print(f"\n" + "="*80 + "\n")
     
     results = []
@@ -116,9 +108,6 @@ def test_all_models():
         result = build_master_prompt(
             model=model,
             user_text=TEST_BRIEF["user_text"],
-            image_description=TEST_BRIEF["image_description"],
-            style=TEST_BRIEF["style"],
-            mood=TEST_BRIEF["mood"],
         )
         results.append(result)
         
@@ -173,10 +162,14 @@ def quick_test_single_model(model: str = "meta-llama/Meta-Llama-3.1-8B-Instruct"
 
 if __name__ == "__main__":
     import sys
-    
+    """
     if len(sys.argv) > 1 and sys.argv[1] == "quick":
         # Quick test of default model
         quick_test_single_model()
     else:
         # Full comparison
         test_all_models()
+    """
+
+    dico = test_all_models()
+    print(dico)

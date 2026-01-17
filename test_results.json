@@ -2,23 +2,21 @@
   {
     "status": "success",
     "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
-    "prompt": "A darkly comedic minimalist workspace with a single overhead light casting shadows, a worn leather armchair, a small potted succulent, a steaming cup of coffee on a minimalist wooden desk, and a laptop screen displaying a blank document with a cursor blinking in the center, all set against a muted, cinematic color palette.",
-    "elapsed_time": 4.66,
-    "tokens_used": 210
+    "prompt": "a realistic portrait of myself wearing a Gucci baseball cap",
+    "elapsed_time": 2.26,
+    "tokens_used": 108
   },
   {
     "status": "success",
     "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
-    "prompt": "A cinematic and moody scene of a minimalist workspace with a laptop, a cup of coffee, and a small potted plant, illuminated by a single soft light source, evoking the introspective yet witty personality of a productivity and minimalism content creator with a dark humor twist.",
-    "elapsed_time": 52.17,
-    "tokens_used": 201
+    "prompt": "Photorealistic portrait of a person wearing a Gucci baseball cap in a bright and colorful setting with clear facial features and intricate details on the cap",
+    "elapsed_time": 48.53,
+    "tokens_used": 126
   },
   {
-    "status": "success",
+    "status": "error",
     "model": "Qwen/Qwen2.5-7B-Instruct",
-    "prompt": "A minimalist desk with a coffee cup, laptop, and plant in a cinematic, moody style, featuring a content creator discussing productivity and minimalism with a darkly humorous tone, evoking an introspective yet witty mood.",
-    "elapsed_time": 7.64,
-    "tokens_used": 190
+    "error": "Error code: 503 - {'error': {'message': 'Failed to generate a completion', 'type': 'server_error', 'code': 'failed_generation'}}"
   },
   {
     "status": "error",
@@ -28,8 +26,8 @@
   {
     "status": "success",
     "model": "NousResearch/Hermes-3-Llama-3.1-8B",
-    "prompt": "A minimalist office setup featuring a sleek laptop, a single potted plant, and a steaming cup of coffee, all bathed in moody, cinematic lighting, with an air of introspective wit and dark humor.",
-    "elapsed_time": 6.51,
-    "tokens_used": 196
+    "prompt": "A photo of me wearing a Gucci hat",
+    "elapsed_time": 7.54,
+    "tokens_used": 113
   }
 ]
