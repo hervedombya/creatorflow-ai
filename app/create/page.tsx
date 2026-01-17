@@ -106,8 +106,8 @@ export default function Create() {
         image_description: `Format: ${format}, Platforms: ${platforms.join(', ')}` 
       }
 
-      // 3. Call Backend
-      const response = await fetch(`${BACKEND_URL}/api/v1/generate`, {
+      // 3. Call Backend (Next.js API Route)
+      const response = await fetch(`${BACKEND_URL}/api/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
