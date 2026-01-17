@@ -1,7 +1,8 @@
 # file: backend/main.py
 import os
+from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from openai import OpenAI
 from google import genai
@@ -11,8 +12,9 @@ from PIL import Image
 import base64
 from fastapi.middleware.cors import CORSMiddleware
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from backend/.env file
+env_path = Path(__file__).parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 # ====== CONFIG ======
 FEATHERLESS_API_KEY = os.getenv("FEATHERLESS_API_KEY")
@@ -151,7 +153,7 @@ def health_check():
 
 @app.post("/api/v1/generate", response_model=GenerationResponse)
 async def generate_endpoint(
-    user_text: str,
+    user_text: str = Form(...),
     file: UploadFile = File(...)
 ):
     """
