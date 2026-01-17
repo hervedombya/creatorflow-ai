@@ -10,6 +10,7 @@ import { InstagramIcon, TikTokIcon, SnapchatIcon, FacebookIcon } from "@/compone
 import { ArrowLeft, Sparkles, Upload, Square, Smartphone, Video, X, Loader2, Image as ImageIcon } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { toast } from "sonner"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
 
@@ -93,8 +94,11 @@ export default function Create() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000))
       
-      alert('Génération lancée ! (Backend non connecté pour le moment)')
+      toast.success('Génération lancée !', {
+        description: 'Votre contenu est en cours de création. (Demo mode)'
+      })
     } catch (err) {
+      toast.error('Une erreur est survenue')
       setError('Une erreur est survenue. Réessayez.')
     } finally {
       setIsLoading(false)

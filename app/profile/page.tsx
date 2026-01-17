@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Sparkles, Save, Loader2, Share2, User } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { Header } from "@/components/Header"
 
 export default function ProfilePage() {
@@ -95,11 +96,15 @@ export default function ProfilePage() {
 
       if (error) throw error
 
-      alert("Profil mis à jour avec succès !")
+      toast.success("Profil mis à jour avec succès !", {
+        description: "Vos préférences ont été enregistrées."
+      })
       router.refresh()
     } catch (error: any) {
       console.error('Error saving profile:', error)
-      alert(`Erreur: ${error.message}`)
+      toast.error("Erreur lors de la sauvegarde", {
+        description: error.message
+      })
     } finally {
       setSaving(false)
     }
