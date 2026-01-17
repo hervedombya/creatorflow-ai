@@ -43,15 +43,28 @@ export async function signup(formData: FormData) {
 
 export async function signInWithGoogle() {
   const supabase = await createClient()
-  const headersList = await headers()
-  const host = headersList.get('host') // e.g. "localhost:3000" or "creatorflow.vercel.app"
-  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
-  const origin = `${protocol}://${host}`
+  // Determine the correct origin for the redirect
+  const getAuthRedirectUrl = () => {
+    let url =
+      process.env.NEXT_PUBLIC_SITE_URL ??
+      process.env.NEXT_PUBLIC_VERCEL_URL ??
+      'http://localhost:3000'
+
+    // Include https:// if not present (Vercel URL doesn't include it)
+    url = url.startsWith('http') ? url : `https://${url}`
+    // Remove trailing slash if present
+    url = url.endsWith('/') ? url.slice(0, -1) : url
+    
+    return `${url}/auth/callback`
+  }
+  
+  const redirectUrl = getAuthRedirectUrl()
+  console.log("Auth Redirect URL:", redirectUrl) // Debug log
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: redirectUrl,
     },
   })
 
