@@ -11,8 +11,10 @@ import { ArrowLeft, Sparkles, Upload, Square, Smartphone, Video, X, Loader2, Ima
 import Link from "next/link"
 import Image from "next/image"
 import { toast } from "sonner"
+import { createClient } from "@/lib/supabase/client"
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
+// When deploying to Vercel, relative path works for internal API routes
+const BACKEND_URL = '' // Empty string means same origin (relative path)
 
 type Platform = 'instagram' | 'tiktok' | 'snapchat' | 'facebook'
 type Format = 'post' | 'story' | 'reel'
@@ -32,6 +34,7 @@ export default function Create() {
   // UI state
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [resultImage, setResultImage] = useState<string | null>(null)
   
   // Refs for file inputs
   const referenceInputRef = useRef<HTMLInputElement>(null)
@@ -79,27 +82,67 @@ export default function Create() {
     setError(null)
     
     try {
-      // For MVP: just log the data (backend integration comes next)
-      console.log('Submitting:', {
-        description,
-        format,
-        platforms,
-        referenceImage: referenceImage?.name,
-        productImage: productImage?.name
+      // 1. Fetch User Profile for context
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error("User not authenticated")
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+
+      // 2. Prepare Payload
+      const payload = {
+        user_text: description,
+        // Context from Profile
+        tone: profile?.content_tone || [],
+        visual_style: profile?.visual_style || [],
+        niche: profile?.niche || "",
+        sub_niche: profile?.sub_niche || "",
+        creator_type: profile?.creator_type || "",
+        // Device/Format context (optional, can be added to user_text)
+        image_description: `Format: ${format}, Platforms: ${platforms.join(', ')}` 
+      }
+
+      // 3. Call Backend
+      const response = await fetch(`${BACKEND_URL}/api/v1/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Generation failed')
+      }
+
+      const data = await response.json()
+      
+      // 4. Success
+      toast.success('Contenu généré avec succès !', {
+        description: 'Votre image a été créée par Gemini.'
       })
       
-      // TODO: Upload images to Supabase Storage
-      // TODO: Call backend API
+      // Log for demo (in real app, we would redirect to a result page or show the image)
+      console.log("Generated Image URL:", data.image_url)
+      console.log("Master Prompt:", data.master_prompt)
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // For now, let's just open the image in a new tab or show it (we'd need state for this)
+      // window.open(data.image_url, '_blank')
       
-      toast.success('Génération lancée !', {
-        description: 'Votre contenu est en cours de création. (Demo mode)'
+      // Set result state (need to add this state)
+      setResultImage(data.image_url)
+
+    } catch (err: any) {
+      console.error(err)
+      toast.error('Une erreur est survenue', {
+        description: err.message
       })
-    } catch (err) {
-      toast.error('Une erreur est survenue')
-      setError('Une erreur est survenue. Réessayez.')
+      setError(err.message)
     } finally {
       setIsLoading(false)
     }
@@ -380,6 +423,43 @@ export default function Create() {
              </>
            )}
         </Button>
+
+        {/* Result Display */}
+        {resultImage && (
+          <div className="bg-white rounded-2xl border border-purple-200 p-8 shadow-lg mb-10 animate-in fade-in slide-in-from-bottom-4">
+             <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center p-2 bg-green-100 text-green-700 rounded-full mb-4">
+                  <Sparkles className="w-5 h-5 mr-2" />
+                  <span className="font-bold text-sm">Contenu Généré !</span>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Votre visuel viral est prêt</h2>
+             </div>
+             
+             <div className="relative aspect-square md:aspect-auto md:h-[500px] w-full bg-gray-100 rounded-xl overflow-hidden border border-gray-100 mb-6">
+               <Image 
+                 src={resultImage} 
+                 alt="Generated Content" 
+                 fill 
+                 className="object-contain" // Use contain to show full image without cropping
+                 unoptimized // Important for base64 or external URLs
+               />
+             </div>
+             
+             <div className="flex gap-4 justify-center">
+                <Button variant="outline" onClick={() => setResultImage(null)}>
+                  Générer une autre version
+                </Button>
+                <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = resultImage;
+                  link.download = 'creatorflow-generated.png';
+                  link.click();
+                }}>
+                  Télécharger
+                </Button>
+             </div>
+          </div>
+        )}
 
       </main>
     </div>
